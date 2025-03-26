@@ -1,181 +1,29 @@
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.models import User
-from rest_framework import generics, status
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAdminUser, AllowAny
-from .models import Branch, Category, Subcategory, Product, Order
-from .serializers import (
-    BranchSerializer, CategorySerializer, SubcategorySerializer,
-    ProductSerializer, OrderSerializer, UserSerializer, PromoCodeSerializer
-)
-from django.core.mail import send_mail
-from django.conf import settings
-import os
+from django.urls import path
+from . import views
 
-# Публичные API
-class PublicBranchList(generics.ListAPIView):
-    queryset = Branch.objects.all()
-    serializer_class = BranchSerializer
-    permission_classes = [AllowAny]
+urlpatterns = [
+    # Публичные маршруты
+    path('public/branches/', views.PublicBranchList.as_view(), name='public-branch-list'),
+    path('public/categories/', views.PublicCategoryList.as_view(), name='public-category-list'),
+    path('public/products/', views.PublicProductList.as_view(), name='public-product-list'),
 
-class PublicCategoryList(generics.ListAPIView):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
-    permission_classes = [AllowAny]
+    # Админские маршруты
+    path('admin/login/', views.AdminLoginView.as_view(), name='admin-login'),
+    path('users/', views.UserList.as_view(), name='user-list'),
+    path('users/<int:pk>/', views.UserDelete.as_view(), name='user-delete'),
+    path('admin/branches/', views.BranchListCreate.as_view(), name='branch-list-create'),
+    path('admin/branch/<int:pk>/', views.BranchDetail.as_view(), name='branch-detail'),
+    path('admin/categories/', views.CategoryListCreate.as_view(), name='category-list-create'),
+    path('admin/subcategories/', views.SubcategoryListCreate.as_view(), name='subcategory-list-create'),
+    path('admin/subcategory/<int:pk>/', views.SubcategoryDetail.as_view(), name='subcategory-detail'),
+    path('admin/products/', views.ProductListCreate.as_view(), name='product-list-create'),
+    path('admin/product/<int:pk>/', views.ProductDetail.as_view(), name='product-detail'),
+    path('admin/promo/', views.PromoCodeView.as_view(), name='promo-code'),
 
-class PublicProductList(generics.ListAPIView):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
-    permission_classes = [AllowAny]
+    # Маршруты для заказов
+    path('orders/', views.OrderCreate.as_view(), name='order-create'),
 
-# Админский вход
-class AdminLoginView(APIView):
-    permission_classes = [AllowAny]
-
-    def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
-        if not username or not password:
-            return Response(
-                {'detail': 'Не указаны имя пользователя или пароль'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        user = authenticate(request, username=username, password=password)
-        if user and user.is_staff:
-            login(request, user)
-            return Response(
-                {'message': 'Вход успешен', 'username': user.username},
-                status=status.HTTP_200_OK
-            )
-        return Response(
-            {'detail': 'Неверные учетные данные или недостаточно прав'},
-            status=status.HTTP_401_UNAUTHORIZED
-        )
-
-# Админские API
-class UserList(generics.ListAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [IsAdminUser]
-
-class UserDelete(generics.DestroyAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [IsAdminUser]
-
-class BranchListCreate(generics.ListCreateAPIView):
-    queryset = Branch.objects.all()
-    serializer_class = BranchSerializer
-    permission_classes = [IsAdminUser]
-
-class BranchDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Branch.objects.all()
-    serializer_class = BranchSerializer
-    permission_classes = [IsAdminUser]
-
-class CategoryListCreate(generics.ListCreateAPIView):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
-    permission_classes = [IsAdminUser]
-
-class SubcategoryListCreate(generics.ListCreateAPIView):
-    queryset = Subcategory.objects.all()
-    serializer_class = SubcategorySerializer
-    permission_classes = [IsAdminUser]
-
-class SubcategoryDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Subcategory.objects.all()
-    serializer_class = SubcategorySerializer
-    permission_classes = [IsAdminUser]
-
-class ProductListCreate(generics.ListCreateAPIView):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
-    permission_classes = [IsAdminUser]
-
-    def create(self, request, *args, **kwargs):
-        data = request.data.copy()
-        if 'image' in request.FILES:
-            data['image'] = request.FILES['image']
-        serializer = self.get_serializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
-class ProductDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
-    permission_classes = [IsAdminUser]
-
-    def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        data = request.data.copy()
-        if 'image' in request.FILES:
-            if instance.image:
-                os.remove(instance.image.path)
-            data['image'] = request.FILES['image']
-        serializer = self.get_serializer(instance, data=data, partial=partial)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        return Response(serializer.data)
-
-class PromoCodeView(APIView):
-    permission_classes = [IsAdminUser]
-
-    def post(self, request):
-        serializer = PromoCodeSerializer(data=request.data)
-        if serializer.is_valid():
-            promo_code = serializer.validated_data['promoCode']
-            username = serializer.validated_data['username']
-            try:
-                user = User.objects.get(username=username)
-                send_mail(
-                    'Ваш промокод',
-                    f'Ваш промокод: {promo_code}',
-                    settings.EMAIL_HOST_USER,
-                    [user.email],
-                    fail_silently=False,
-                )
-                return Response({'message': 'Промокод отправлен'}, status=status.HTTP_200_OK)
-            except User.DoesNotExist:
-                return Response({'detail': 'Пользователь не найден'}, status=status.HTTP_404_NOT_FOUND)
-            except Exception as e:
-                return Response({'detail': f'Ошибка отправки: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-# API для заказов
-class OrderCreate(generics.CreateAPIView):
-    queryset = Order.objects.all()
-    serializer_class = OrderSerializer
-    permission_classes = [AllowAny]
-
-# API для авторизации пользователей
-class RegisterView(APIView):
-    permission_classes = [AllowAny]
-
-    def post(self, request):
-        email = request.data.get('email')
-        phone = request.data.get('phone')
-        password = request.data.get('password')
-        if User.objects.filter(email=email).exists():
-            return Response({'detail': 'Email уже зарегистрирован'}, status=status.HTTP_400_BAD_REQUEST)
-        user = User.objects.create_user(username=email.split('@')[0], email=email, password=password)
-        user.phone = phone
-        user.save()
-        return Response({'message': 'Регистрация успешна'}, status=status.HTTP_201_CREATED)
-
-class LoginView(APIView):
-    permission_classes = [AllowAny]
-
-    def post(self, request):
-        email = request.data.get('email')
-        password = request.data.get('password')
-        user = authenticate(request, username=email, password=password)
-        if user:
-            login(request, user)
-            return Response({'message': 'Вход успешен', 'name': user.username}, status=status.HTTP_200_OK)
-        return Response({'detail': 'Неверные учетные данные'}, status=status.HTTP_401_UNAUTHORIZED)
+    # Маршруты для авторизации
+    path('auth/register/', views.RegisterView.as_view(), name='register'),
+    path('auth/login/', views.LoginView.as_view(), name='login'),
+]
