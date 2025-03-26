@@ -11,14 +11,15 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'your-secret-key-here')
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
 # Разрешенные хосты
+# settings.py
 ALLOWED_HOSTS = [
     'boodaikg.com',
     'www.boodaikg.com',
-    'nukesul-boood-2ab7.twc1.net',  # Твой домен бэкенда
+    'nukesul-boood-2ab7.twc1.net',
     'localhost',
     '127.0.0.1',
+    '90.156.227.10',  # Добавлен IP сервера
 ]
-
 # Установленные приложения
 INSTALLED_APPS = [
     'django.contrib.admin',
