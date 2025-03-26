@@ -33,7 +33,7 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
+    "https://boodaikg.com",
 ]
 
 ROOT_URLCONF = 'myproject.urls'
