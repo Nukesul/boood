@@ -1,20 +1,25 @@
 import os
 from pathlib import Path
 
+# Определение базовой директории
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'your-secret-key-here'
+# Секретный ключ (лучше хранить в переменных окружения)
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'your-secret-key-here')
 
-DEBUG = True
+# Режим отладки (отключай в продакшене)
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
+# Разрешенные хосты
 ALLOWED_HOSTS = [
     'boodaikg.com',
     'www.boodaikg.com',
-    'nukesul-boood-2ab7.tw'
-    
+    'nukesul-boood-2ab7.twc1.net',  # Добавлен проблемный хост
+    'localhost',  # Полезно для разработки
+    '127.0.0.1',  # Полезно для разработки
 ]
 
-
+# Установленные приложения
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -27,6 +32,7 @@ INSTALLED_APPS = [
     'api',
 ]
 
+# Промежуточное ПО
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -38,16 +44,20 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# Настройки CORS
 CORS_ALLOWED_ORIGINS = [
     "https://boodaikg.com",
+    "http://localhost:3000",  # Добавь, если используешь фронтенд локально
 ]
 
+# Конфигурация URL
 ROOT_URLCONF = 'myproject.urls'
 
+# Настройки шаблонов
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],  # Добавь директорию для шаблонов
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -60,6 +70,7 @@ TEMPLATES = [
     },
 ]
 
+# WSGI приложение
 WSGI_APPLICATION = 'myproject.wsgi.application'
 
 # Подключение MySQL
@@ -69,35 +80,36 @@ DATABASES = {
         'NAME': 'ch79145_boodai',
         'USER': 'ch79145_boodai',
         'PASSWORD': '16162007',
-        'HOST': 'vh438.timeweb.ru',  # Или IP сервера
+        'HOST': 'vh438.timeweb.ru',
+        'PORT': '3306',  # Укажи порт для MySQL
         'OPTIONS': {
-            'charset': 'utf8mb4',  # Поддержка эмодзи и русского языка
+            'charset': 'utf8mb4',
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         },
     }
 }
 
+# Валидаторы паролей
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
+# Локализация
 LANGUAGE_CODE = 'ru-ru'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = 'static/'
+# Статические файлы
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Для продакшена
+
+# Медиафайлы
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# Автоинкремент полей
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
