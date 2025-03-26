@@ -14,9 +14,9 @@ DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = [
     'boodaikg.com',
     'www.boodaikg.com',
-    'nukesul-boood-2ab7.twc1.net',  # Добавлен проблемный хост
-    'localhost',  # Полезно для разработки
-    '127.0.0.1',  # Полезно для разработки
+    'nukesul-boood-2ab7.twc1.net',  # Твой домен бэкенда
+    'localhost',
+    '127.0.0.1',
 ]
 
 # Установленные приложения
@@ -34,7 +34,7 @@ INSTALLED_APPS = [
 
 # Промежуточное ПО
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # Должен быть перед CommonMiddleware
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -46,9 +46,13 @@ MIDDLEWARE = [
 
 # Настройки CORS
 CORS_ALLOWED_ORIGINS = [
-    "https://boodaikg.com",
-    "http://localhost:3000",  # Добавь, если используешь фронтенд локально
+    "https://boodaikg.com",         # Домен фронтенда
+    "http://localhost:3000",         # Для локальной разработки фронтенда
+    "https://nukesul-boood-2ab7.twc1.net",  # Если бэкенд на HTTPS
+    "http://nukesul-boood-2ab7.twc1.net",   # Если бэкенд на HTTP
 ]
+
+CORS_ALLOW_CREDENTIALS = True  # Разрешает отправку кук и учетных данных
 
 # Конфигурация URL
 ROOT_URLCONF = 'myproject.urls'
@@ -57,7 +61,7 @@ ROOT_URLCONF = 'myproject.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],  # Добавь директорию для шаблонов
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -81,7 +85,7 @@ DATABASES = {
         'USER': 'ch79145_boodai',
         'PASSWORD': '16162007',
         'HOST': 'vh438.timeweb.ru',
-        'PORT': '3306',  # Укажи порт для MySQL
+        'PORT': '3306',
         'OPTIONS': {
             'charset': 'utf8mb4',
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
@@ -105,7 +109,7 @@ USE_TZ = True
 
 # Статические файлы
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Для продакшена
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Медиафайлы
 MEDIA_URL = '/media/'
