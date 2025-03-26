@@ -8,7 +8,7 @@ urlpatterns = [
     path('api/public/products/', views.PublicProductList.as_view(), name='public-product-list'),
 
     # Админские маршруты
-    path('api/admin/login/', views.AdminLoginView.as_view(), name='admin-login'),  
+    path('api/admin/login/', views.AdminLoginView.as_view(), name='admin-login'),
     path('api/admin/users/', views.UserList.as_view(), name='user-list'),
     path('api/admin/users/<int:pk>/', views.UserDelete.as_view(), name='user-delete'),
     path('api/admin/branches/', views.BranchListCreate.as_view(), name='branch-list-create'),
