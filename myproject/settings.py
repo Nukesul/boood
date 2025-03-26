@@ -7,7 +7,13 @@ SECRET_KEY = 'your-secret-key-here'
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['boodaikg.com', 'www.boodaikg.com']
+ALLOWED_HOSTS = [
+    'boodaikg.com',
+    'www.boodaikg.com',
+    'nukesul-boood-2ab7.tw'
+    
+]
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
