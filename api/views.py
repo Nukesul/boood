@@ -57,7 +57,7 @@ class AdminLoginView(APIView):
     def get(self, request):
         return Response(
             {'detail': 'Метод GET не поддерживается для этого эндпоинта'},
-            status=status.HTTP_405_METHOD_NOT_ALLOWED  # Исправлено
+            status=status.HTTP_405_METHOD_NOT_ALLOWED 
         )
 
 # Админские API
