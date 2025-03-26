@@ -29,19 +29,38 @@ class PublicProductList(generics.ListAPIView):
     serializer_class = ProductSerializer
     permission_classes = [AllowAny]
 
-# Админские API
+# Админский вход
 class AdminLoginView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
         username = request.data.get('username')
         password = request.data.get('password')
+        if not username or not password:
+            return Response(
+                {'detail': 'Не указаны имя пользователя или пароль'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
         user = authenticate(request, username=username, password=password)
         if user and user.is_staff:
             login(request, user)
-            return Response({'message': 'Вход успешен'}, status=status.HTTP_200_OK)
-        return Response({'message': 'Неверные учетные данные или недостаточно прав'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {'message': 'Вход успешен', 'username': user.username},
+                status=status.HTTP_200_OK
+            )
+        return Response(
+            {'detail': 'Неверные учетные данные или недостаточно прав'},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
 
+    def get(self, request):
+        return Response(
+            {'detail': 'Метод GET не поддерживается для этого эндпоинта'},
+            status=status.HTTP_405_METHOD_NOT_ALLOWED
+        )
+
+# Админские API
 class UserList(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -129,9 +148,9 @@ class PromoCodeView(APIView):
                 )
                 return Response({'message': 'Промокод отправлен'}, status=status.HTTP_200_OK)
             except User.DoesNotExist:
-                return Response({'message': 'Пользователь не найден'}, status=status.HTTP_404_NOT_FOUND)
+                return Response({'detail': 'Пользователь не найден'}, status=status.HTTP_404_NOT_FOUND)
             except Exception as e:
-                return Response({'message': f'Ошибка отправки: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response({'detail': f'Ошибка отправки: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # API для заказов
@@ -140,7 +159,7 @@ class OrderCreate(generics.CreateAPIView):
     serializer_class = OrderSerializer
     permission_classes = [AllowAny]
 
-# API для авторизации
+# API для авторизации пользователей
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
@@ -149,7 +168,7 @@ class RegisterView(APIView):
         phone = request.data.get('phone')
         password = request.data.get('password')
         if User.objects.filter(email=email).exists():
-            return Response({'message': 'Email уже зарегистрирован'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': 'Email уже зарегистрирован'}, status=status.HTTP_400_BAD_REQUEST)
         user = User.objects.create_user(username=email.split('@')[0], email=email, password=password)
         user.phone = phone
         user.save()
@@ -165,4 +184,4 @@ class LoginView(APIView):
         if user:
             login(request, user)
             return Response({'message': 'Вход успешен', 'name': user.username}, status=status.HTTP_200_OK)
-        return Response({'message': 'Неверные учетные данные'}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'detail': 'Неверные учетные данные'}, status=status.HTTP_401_UNAUTHORIZED)

@@ -54,12 +54,6 @@ class AdminLoginView(APIView):
             status=status.HTTP_401_UNAUTHORIZED
         )
 
-    def get(self, request):
-        return Response(
-            {'detail': 'Метод GET не поддерживается для этого эндпоинта'},
-            status=status.HTTP_405_METHOD_NOT_ALLOWED
-        )
-
 # Админские API
 class UserList(generics.ListAPIView):
     queryset = User.objects.all()
