@@ -1,4 +1,3 @@
-# myproject/settings.py
 import os
 from pathlib import Path
 
@@ -34,7 +33,7 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # URL вашего фронтенда
+    "http://localhost:3000",
 ]
 
 ROOT_URLCONF = 'myproject.urls'
@@ -57,10 +56,17 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'myproject.wsgi.application'
 
+# Подключение MySQL
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'ch79145_boodai',
+        'USER': 'ch79145_boodai',
+        'PASSWORD': '16162007',
+        'HOST': 'vh438.timeweb.ru',  # Или IP сервера
+        'OPTIONS': {
+            'charset': 'utf8mb4',  # Поддержка эмодзи и русского языка
+        },
     }
 }
 
