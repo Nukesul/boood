@@ -1,6 +1,6 @@
 from django.contrib import admin
-from .models import Branch, Category, Subcategory, Product, Order
 from django import forms
+from .models import Branch, Category, Subcategory, Product, Order
 
 class ProductAdminForm(forms.ModelForm):
     class Meta:
@@ -9,18 +9,30 @@ class ProductAdminForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Проверяем, существует ли instance и есть ли у него subcategory
         if self.instance and self.instance.pk and self.instance.subcategory:
             category = self.instance.subcategory.category
-            if not category.has_multiple_prices:
-                # Если категория не поддерживает множественные цены, скрываем поля small, medium, large
+            if category.has_multiple_prices:
+                # Если категория поддерживает множественные цены (например, пицца), скрываем price
+                self.fields['price'].widget = forms.HiddenInput()
+            else:
+                # Если нет, скрываем small, medium, large
                 self.fields['small_price'].widget = forms.HiddenInput()
                 self.fields['medium_price'].widget = forms.HiddenInput()
                 self.fields['large_price'].widget = forms.HiddenInput()
-            else:
-                # Если поддерживает, скрываем поле price
-                self.fields['price'].widget = forms.HiddenInput()
-        # Если это новый объект (нет pk), ничего не скрываем, оставляем все поля доступными
+
+        # Динамическое обновление полей при выборе подкатегории
+        if 'subcategory' in self.data:
+            try:
+                subcategory_id = int(self.data.get('subcategory'))
+                subcategory = Subcategory.objects.get(id=subcategory_id)
+                if subcategory.category.has_multiple_prices:
+                    self.fields['price'].widget = forms.HiddenInput()
+                else:
+                    self.fields['small_price'].widget = forms.HiddenInput()
+                    self.fields['medium_price'].widget = forms.HiddenInput()
+                    self.fields['large_price'].widget = forms.HiddenInput()
+            except (ValueError, Subcategory.DoesNotExist):
+                pass
 
 @admin.register(Branch)
 class BranchAdmin(admin.ModelAdmin):

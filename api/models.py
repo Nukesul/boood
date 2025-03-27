@@ -46,11 +46,21 @@ class Product(models.Model):
     medium_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Цена (Средняя)")
     large_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Цена (Большая)")
     subcategory = models.ForeignKey(Subcategory, on_delete=models.CASCADE, verbose_name="Подкатегория")
-    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, verbose_name="Филиал")
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, default=1, verbose_name="Филиал")  # Добавлен default
     image = models.ImageField(upload_to='products/', null=True, blank=True, verbose_name="Изображение")
     
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        # Логика: если категория имеет has_multiple_prices, очищаем price, иначе очищаем множественные цены
+        if self.subcategory and self.subcategory.category.has_multiple_prices:
+            self.price = None
+        else:
+            self.small_price = None
+            self.medium_price = None
+            self.large_price = None
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = "Продукт"
