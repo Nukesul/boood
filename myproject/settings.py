@@ -11,14 +11,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'your-secret-key-here')
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
 # Разрешенные хосты
-ALLOWED_HOSTS = [
-    'boodaikg.com',
-    'www.boodaikg.com',
-    'nukesul-boood-2ab7.twc1.net',
-    'localhost',
-    '127.0.0.1',
-    '90.156.227.10',  # IP сервера
-]
+ALLOWED_HOSTS = ['*']  # Разрешаем все хосты
 
 # Установленные приложения
 INSTALLED_APPS = [
@@ -35,7 +28,7 @@ INSTALLED_APPS = [
 
 # Промежуточное ПО
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # Должен быть перед CommonMiddleware
+    'corsheaders.middleware.CorsMiddleware',  # CORS должен быть первым
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -46,15 +39,10 @@ MIDDLEWARE = [
 ]
 
 # Настройки CORS
-CORS_ALLOWED_ORIGINS = [
-    "http://boodaikg.com",          # Frontend domain
-    "https://boodaikg.com",         # Frontend domain with HTTPS
-    "http://localhost:3000",         # For local frontend development
-]
-
-CORS_ALLOW_CREDENTIALS = True  # Разрешает отправку кук и учетных данных
-CORS_ALLOW_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']  # Explicitly allow methods
-CORS_ALLOW_HEADERS = ['*']  # Allow all headers (adjust for production)
+CORS_ALLOW_ALL_ORIGINS = True  # Разрешаем все источники
+CORS_ALLOW_CREDENTIALS = True  # Разрешаем куки и учетные данные
+CORS_ALLOW_METHODS = ['*']  # Разрешаем все методы
+CORS_ALLOW_HEADERS = ['*']  # Разрешаем все заголовки
 
 # Конфигурация URL
 ROOT_URLCONF = 'myproject.urls'
