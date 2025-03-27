@@ -10,7 +10,7 @@ class BranchSerializer(serializers.ModelSerializer):
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ['id', 'name', 'emoji']
+        fields = ['id', 'name', 'emoji', 'has_multiple_prices']
 
 class SubcategorySerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
@@ -23,7 +23,7 @@ class ProductSerializer(serializers.ModelSerializer):
     branch = BranchSerializer(read_only=True)
     class Meta:
         model = Product
-        fields = ['id', 'name', 'price', 'prices', 'subcategory', 'branch', 'image']
+        fields = ['id', 'name', 'price', 'small_price', 'medium_price', 'large_price', 'subcategory', 'branch', 'image']
 
 class OrderSerializer(serializers.ModelSerializer):
     products = ProductSerializer(many=True, read_only=True)

@@ -15,6 +15,11 @@ class Branch(models.Model):
 class Category(models.Model):
     name = models.CharField(max_length=100, verbose_name="Название категории")
     emoji = models.CharField(max_length=10, blank=True, null=True, verbose_name="Эмодзи")
+    has_multiple_prices = models.BooleanField(
+        default=False,
+        verbose_name="Множественные цены",
+        help_text="Выберите, если категория (например, пицца) имеет несколько цен (маленькая, средняя, большая)"
+    )
     
     def __str__(self):
         return f"{self.emoji} {self.name}" if self.emoji else self.name
@@ -37,7 +42,9 @@ class Subcategory(models.Model):
 class Product(models.Model):
     name = models.CharField(max_length=100, verbose_name="Название продукта")
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Цена")
-    prices = models.JSONField(null=True, blank=True, verbose_name="Цены (для пиццы)")  # Для пиццы с разными размерами
+    small_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Цена (Маленькая)")
+    medium_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Цена (Средняя)")
+    large_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Цена (Большая)")
     subcategory = models.ForeignKey(Subcategory, on_delete=models.CASCADE, verbose_name="Подкатегория")
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE, verbose_name="Филиал")
     image = models.ImageField(upload_to='products/', null=True, blank=True, verbose_name="Изображение")
