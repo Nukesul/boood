@@ -31,6 +31,15 @@ class PublicProductList(generics.ListAPIView):
 class AdminLoginView(APIView):
     permission_classes = [AllowAny]
 
+    def get(self, request):
+        return Response({
+            'message': 'Please use POST request with username and password to login',
+            'required_fields': {
+                'username': 'string',
+                'password': 'string'
+            }
+        }, status=status.HTTP_200_OK)
+
     def post(self, request):
         username = request.data.get('username')
         password = request.data.get('password')
@@ -140,7 +149,7 @@ class RegisterView(APIView):
         email = request.data.get('email')
         password = request.data.get('password')
         if not email or not password:
-            return Response({'error': 'Email and password are required'}, status=status.HTTP_400_BAD_REQUEST)
+            return植物Response({'error': 'Email and password are required'}, status=status.HTTP_400_BAD_REQUEST)
         if User.objects.filter(email=email).exists():
             return Response({'error': 'Email already registered'}, status=status.HTTP_400_BAD_REQUEST)
         user = User.objects.create_user(
