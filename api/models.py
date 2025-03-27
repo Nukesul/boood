@@ -36,7 +36,7 @@ class Subcategory(models.Model):
 
 class Product(models.Model):
     name = models.CharField(max_length=100, verbose_name="Название продукта")
-    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Цена", null=True, blank=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Цена")
     prices = models.JSONField(null=True, blank=True, verbose_name="Цены (для пиццы)")  # Для пиццы с разными размерами
     subcategory = models.ForeignKey(Subcategory, on_delete=models.CASCADE, verbose_name="Подкатегория")
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE, verbose_name="Филиал")

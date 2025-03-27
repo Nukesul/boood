@@ -11,8 +11,8 @@ from .serializers import (
 )
 from django.core.mail import send_mail
 from django.conf import settings
-import os
 
+# Публичные маршруты
 class PublicBranchList(generics.ListAPIView):
     queryset = Branch.objects.all()
     serializer_class = BranchSerializer
@@ -28,6 +28,7 @@ class PublicProductList(generics.ListAPIView):
     serializer_class = ProductSerializer
     permission_classes = [AllowAny]
 
+# Админские маршруты
 class AdminLoginView(APIView):
     permission_classes = [AllowAny]
 
@@ -137,11 +138,13 @@ class PromoCodeView(APIView):
                 return Response({'error': f'Sending failed: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# Маршруты для заказов
 class OrderCreate(generics.CreateAPIView):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
     permission_classes = [AllowAny]
 
+# Маршруты для авторизации
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
