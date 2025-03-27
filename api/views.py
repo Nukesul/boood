@@ -38,7 +38,7 @@ class AdminLoginView(APIView):
         password = request.data.get('password')
         if not username or not password:
             return Response(
-                {'detail': 'Не указаны имя пользователя или пароль'},
+                {'error': 'Username and password are required'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
@@ -46,18 +46,12 @@ class AdminLoginView(APIView):
         if user and user.is_staff:
             login(request, user)
             return Response(
-                {'message': 'Вход успешен', 'username': user.username},
+                {'message': 'Login successful', 'username': user.username},
                 status=status.HTTP_200_OK
             )
         return Response(
-            {'detail': 'Неверные учетные данные или недостаточно прав'},
+            {'error': 'Invalid credentials or insufficient permissions'},
             status=status.HTTP_401_UNAUTHORIZED
-        )
-
-    def get(self, request):
-        return Response(
-            {'detail': 'Метод GET не поддерживается для этого эндпоинта'},
-            status=status.HTTP_405_METHOD_NOT_ALLOWED 
         )
 
 # Админские API
@@ -102,10 +96,7 @@ class ProductListCreate(generics.ListCreateAPIView):
     permission_classes = [IsAdminUser]
 
     def create(self, request, *args, **kwargs):
-        data = request.data.copy()
-        if 'image' in request.FILES:
-            data['image'] = request.FILES['image']
-        serializer = self.get_serializer(data=data)
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
@@ -115,19 +106,6 @@ class ProductDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     permission_classes = [IsAdminUser]
-
-    def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        data = request.data.copy()
-        if 'image' in request.FILES:
-            if instance.image:
-                os.remove(instance.image.path)
-            data['image'] = request.FILES['image']
-        serializer = self.get_serializer(instance, data=data, partial=partial)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        return Response(serializer.data)
 
 class PromoCodeView(APIView):
     permission_classes = [IsAdminUser]
@@ -140,17 +118,17 @@ class PromoCodeView(APIView):
             try:
                 user = User.objects.get(username=username)
                 send_mail(
-                    'Ваш промокод',
-                    f'Ваш промокод: {promo_code}',
+                    'Your Promo Code',
+                    f'Your promo code: {promo_code}',
                     settings.EMAIL_HOST_USER,
                     [user.email],
                     fail_silently=False,
                 )
-                return Response({'message': 'Промокод отправлен'}, status=status.HTTP_200_OK)
+                return Response({'message': 'Promo code sent'}, status=status.HTTP_200_OK)
             except User.DoesNotExist:
-                return Response({'detail': 'Пользователь не найден'}, status=status.HTTP_404_NOT_FOUND)
+                return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
             except Exception as e:
-                return Response({'detail': f'Ошибка отправки: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response({'error': f'Sending failed: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # API для заказов
@@ -165,14 +143,17 @@ class RegisterView(APIView):
 
     def post(self, request):
         email = request.data.get('email')
-        phone = request.data.get('phone')
         password = request.data.get('password')
+        if not email or not password:
+            return Response({'error': 'Email and password are required'}, status=status.HTTP_400_BAD_REQUEST)
         if User.objects.filter(email=email).exists():
-            return Response({'detail': 'Email уже зарегистрирован'}, status=status.HTTP_400_BAD_REQUEST)
-        user = User.objects.create_user(username=email.split('@')[0], email=email, password=password)
-        user.phone = phone  # Assuming you have a custom User model with a phone field
-        user.save()
-        return Response({'message': 'Регистрация успешна'}, status=status.HTTP_201_CREATED)
+            return Response({'error': 'Email already registered'}, status=status.HTTP_400_BAD_REQUEST)
+        user = User.objects.create_user(
+            username=email.split('@')[0],
+            email=email,
+            password=password
+        )
+        return Response({'message': 'Registration successful'}, status=status.HTTP_201_CREATED)
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
@@ -183,5 +164,11 @@ class LoginView(APIView):
         user = authenticate(request, username=email, password=password)
         if user:
             login(request, user)
-            return Response({'message': 'Вход успешен', 'name': user.username}, status=status.HTTP_200_OK)
-        return Response({'detail': 'Неверные учетные данные'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {'message': 'Login successful', 'username': user.username},
+                status=status.HTTP_200_OK
+            )
+        return Response(
+            {'error': 'Invalid credentials'},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
