@@ -9,7 +9,8 @@ class ProductAdminForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.instance and self.instance.subcategory:
+        # Проверяем, существует ли instance и есть ли у него subcategory
+        if self.instance and self.instance.pk and self.instance.subcategory:
             category = self.instance.subcategory.category
             if not category.has_multiple_prices:
                 # Если категория не поддерживает множественные цены, скрываем поля small, medium, large
@@ -19,6 +20,7 @@ class ProductAdminForm(forms.ModelForm):
             else:
                 # Если поддерживает, скрываем поле price
                 self.fields['price'].widget = forms.HiddenInput()
+        # Если это новый объект (нет pk), ничего не скрываем, оставляем все поля доступными
 
 @admin.register(Branch)
 class BranchAdmin(admin.ModelAdmin):
@@ -44,7 +46,7 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
     def get_price_display(self, obj):
-        if obj.subcategory.category.has_multiple_prices:
+        if obj.subcategory and obj.subcategory.category.has_multiple_prices:
             prices = []
             if obj.small_price:
                 prices.append(f"Маленькая: {obj.small_price}")
