@@ -1,17 +1,18 @@
+# settings.py
 import os
 from pathlib import Path
 
 # Определение базовой директории
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Секретный ключ (лучше хранить в переменных окружения)
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'your-secret-key-here')
+# Секретный ключ (лучше вынести в переменные окружения в продакшене)
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'your-secret-key-here')  # Замените на безопасный ключ
 
-# Режим отладки (отключай в продакшене)
+# Режим отладки (отключите в продакшене)
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
 # Разрешенные хосты
-ALLOWED_HOSTS = ['*']  # Разрешаем все хосты
+ALLOWED_HOSTS = ['boodaikg.com', 'nukesul-boood-2ab7.twc1.net', 'localhost', '127.0.0.1', 'vh438.timeweb.ru']
 
 # Установленные приложения
 INSTALLED_APPS = [
@@ -21,14 +22,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
-    'corsheaders',
-    'api',  # Ваше приложение
+    'rest_framework',  # Оставляем для возможного API в будущем
+    'corsheaders',     # Для обработки CORS
+    'api',             # Ваше приложение
 ]
 
-# Промежуточное ПО
+# Промежуточное ПО (CORS идет первым)
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # CORS должен быть первым
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -39,13 +40,13 @@ MIDDLEWARE = [
 ]
 
 # Настройки CORS
-# Настройки CORS
 CORS_ALLOWED_ORIGINS = [
-    "http://boodaikg.com",  # Разрешаем ваш фронтенд
-    "https://boodaikg.com",  # Разрешаем ваш фронтенд
-    "http://localhost:3000", # Для разработки, если нужно
+    "http://boodaikg.com",
+    "https://boodaikg.com",
+    "http://localhost:3000",  # Для разработки
+    "http://127.0.0.1:8000",
 ]
-CORS_ALLOW_CREDENTIALS = True  # Разрешаем куки и учетные данные
+CORS_ALLOW_CREDENTIALS = True  # Разрешаем отправку куки и заголовков авторизации
 CORS_ALLOW_METHODS = [
     "DELETE",
     "GET",
@@ -58,7 +59,7 @@ CORS_ALLOW_HEADERS = [
     "accept",
     "accept-encoding",
     "authorization",
-    "content-type",  # Добавляем content-type
+    "content-type",
     "dnt",
     "origin",
     "user-agent",
@@ -66,14 +67,23 @@ CORS_ALLOW_HEADERS = [
     "x-requested-with",
 ]
 
+# Настройки CSRF
+CSRF_TRUSTED_ORIGINS = [
+    "https://boodaikg.com",
+    "http://boodaikg.com",
+    "http://localhost:3000",
+    "http://127.0.0.1:8000",
+    "https://nukesul-boood-2ab7.twc1.net",  # Добавляем для обратной совместимости
+]
+
 # Конфигурация URL
-ROOT_URLCONF = 'myproject.urls'
+ROOT_URLCONF = 'myproject.urls'  # Замените 'myproject' на имя вашего проекта
 
 # Настройки шаблонов
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],  # Если используете кастомные шаблоны
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -87,7 +97,7 @@ TEMPLATES = [
 ]
 
 # WSGI приложение
-WSGI_APPLICATION = 'myproject.wsgi.application'
+WSGI_APPLICATION = 'myproject.wsgi.application'  # Замените 'myproject' на имя вашего проекта
 
 # Подключение MySQL
 DATABASES = {
@@ -122,6 +132,7 @@ USE_TZ = True
 # Статические файлы
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]  # Если есть дополнительные статические файлы
 
 # Медиафайлы
 MEDIA_URL = '/media/'
@@ -129,3 +140,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Автоинкремент полей
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Дополнительные настройки для продакшена (рекомендации)
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True  # Перенаправление на HTTPS
+    SESSION_COOKIE_SECURE = True  # Куки только через HTTPS
+    CSRF_COOKIE_SECURE = True  # CSRF только через HTTPS
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
