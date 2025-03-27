@@ -13,7 +13,6 @@ from django.core.mail import send_mail
 from django.conf import settings
 import os
 
-# Публичные API
 class PublicBranchList(generics.ListAPIView):
     queryset = Branch.objects.all()
     serializer_class = BranchSerializer
@@ -29,7 +28,6 @@ class PublicProductList(generics.ListAPIView):
     serializer_class = ProductSerializer
     permission_classes = [AllowAny]
 
-# Админский вход
 class AdminLoginView(APIView):
     permission_classes = [AllowAny]
 
@@ -54,7 +52,6 @@ class AdminLoginView(APIView):
             status=status.HTTP_401_UNAUTHORIZED
         )
 
-# Админские API
 class UserList(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -131,13 +128,11 @@ class PromoCodeView(APIView):
                 return Response({'error': f'Sending failed: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# API для заказов
 class OrderCreate(generics.CreateAPIView):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
     permission_classes = [AllowAny]
 
-# API для авторизации
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
