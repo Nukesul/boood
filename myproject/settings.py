@@ -39,10 +39,32 @@ MIDDLEWARE = [
 ]
 
 # Настройки CORS
-CORS_ALLOW_ALL_ORIGINS = True  # Разрешаем все источники
+# Настройки CORS
+CORS_ALLOWED_ORIGINS = [
+    "http://boodaikg.com",  # Разрешаем ваш фронтенд
+    "https://boodaikg.com",  # Разрешаем ваш фронтенд
+    "http://localhost:3000", # Для разработки, если нужно
+]
 CORS_ALLOW_CREDENTIALS = True  # Разрешаем куки и учетные данные
-CORS_ALLOW_METHODS = ['*']  # Разрешаем все методы
-CORS_ALLOW_HEADERS = ['*']  # Разрешаем все заголовки
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+]
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",  # Добавляем content-type
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
 
 # Конфигурация URL
 ROOT_URLCONF = 'myproject.urls'
