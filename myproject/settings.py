@@ -132,7 +132,10 @@ USE_TZ = True
 # Статические файлы
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]  # Если есть дополнительные статические файлы
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),  # Существующий путь
+    '/opt/build/static',               # Добавленный путь
+]
 
 # Медиафайлы
 MEDIA_URL = '/media/'
