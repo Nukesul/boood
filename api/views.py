@@ -170,7 +170,7 @@ class RegisterView(APIView):
         if User.objects.filter(email=email).exists():
             return Response({'detail': 'Email уже зарегистрирован'}, status=status.HTTP_400_BAD_REQUEST)
         user = User.objects.create_user(username=email.split('@')[0], email=email, password=password)
-        user.phone = phone
+        user.phone = phone  # Assuming you have a custom User model with a phone field
         user.save()
         return Response({'message': 'Регистрация успешна'}, status=status.HTTP_201_CREATED)
 
