@@ -8,6 +8,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
     # Отдаем React-приложение для всех остальных маршрутов
+    path('', TemplateView.as_view(template_name="index.html")),  # Корневой URL для React
 ]
 
 # Обслуживание медиафайлов в режиме разработки
